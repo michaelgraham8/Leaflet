@@ -22,19 +22,19 @@ import * as Util from '../core/Util';
 
 // factory new L.Transformation(a: Number, b: Number, c: Number, d: Number)
 // Creates a `Transformation` object with the given coefficients.
-export function Transformation(a, b, c, d) {
+export function Transformation(timesX, plusX, timesY, plusY) {
 	if (Util.isArray(a)) {
 		// use array properties
-		this._a = a[0];
-		this._b = a[1];
-		this._c = a[2];
-		this._d = a[3];
+		this._timesX = a[0];
+		this._plusX = a[1];
+		this._timesY = a[2];
+		this._plusY = a[3];
 		return;
 	}
-	this._a = a;
-	this._b = b;
-	this._c = c;
-	this._d = d;
+	this._timesX = a;
+	this._plusX = b;
+	this._timesY = c;
+	this._plusY = d;
 }
 
 Transformation.prototype = {
@@ -48,8 +48,8 @@ Transformation.prototype = {
 	// destructive transform (faster)
 	_transform: function (point, scale) {
 		scale = scale || 1;
-		point.x = scale * (this._a * point.x + this._b);
-		point.y = scale * (this._c * point.y + this._d);
+		point.x = scale * (this._timesX * point.x + this._plusX);
+		point.y = scale * (this._timesY * point.y + this._plusY);
 		return point;
 	},
 
@@ -59,8 +59,8 @@ Transformation.prototype = {
 	untransform: function (point, scale) {
 		scale = scale || 1;
 		return new Point(
-		        (point.x / scale - this._b) / this._a,
-		        (point.y / scale - this._d) / this._c);
+		        (point.x / scale - this._plusX) / this._timesX,
+		        (point.y / scale - this._plusY) / this._timesY);
 	}
 };
 
@@ -74,6 +74,6 @@ Transformation.prototype = {
 // Expects an coefficients array of the form
 // `[a: Number, b: Number, c: Number, d: Number]`.
 
-export function toTransformation(a, b, c, d) {
-	return new Transformation(a, b, c, d);
+export function toTransformation(timesX, plusX, timesY, plusY) {
+	return new Transformation(timesX, plusX, timesY, plusY);
 }
