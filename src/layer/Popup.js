@@ -361,6 +361,10 @@ Layer.include({
 	// necessary event listeners. If a `Function` is passed it will receive
 	// the layer as the first argument and should return a `String` or `HTMLElement`.
 	bindPopup: function (content, options) {
+		if ((typeof content !== 'string') || (typeof content !== 'function')) {
+			throw new Error('Invalid argument passed to bindPopup(): content must be of type String or Function.');
+		}
+
 		this._popup = this._initOverlay(Popup, this._popup, content, options);
 		if (!this._popupHandlersAdded) {
 			this.on({
