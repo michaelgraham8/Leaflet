@@ -2,7 +2,7 @@ import {Map} from '../Map';
 import {Handler} from '../../core/Handler';
 import * as DomEvent from '../../dom/DomEvent';
 import {Point} from '../../geometry/Point';
-import * as Util from '../../core/Util';
+import * as MapUtil from '../MapUtil';
 import Browser from '../../core/Browser';
 
 /*
@@ -42,7 +42,7 @@ export var TapHold = Handler.extend({
 		var first = e.touches[0];
 		this._startPos = this._newPos = new Point(first.clientX, first.clientY);
 
-		this._holdTimeout = setTimeout(Util.bind(function () {
+		this._holdTimeout = setTimeout(MapUtil.bind(function () {
 			this._cancel();
 			if (!this._isTapValid()) { return; }
 

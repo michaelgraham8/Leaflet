@@ -1,4 +1,4 @@
-import * as Util from '../core/Util';
+import * as MapUtil from './MapUtil';
 import {Evented} from '../core/Events';
 import {EPSG3857} from '../geo/crs/CRS.EPSG3857';
 import {Point, toPoint} from '../geometry/Point';
@@ -124,7 +124,7 @@ export var Map = Evented.extend({
 	},
 
 	initialize: function (id, options) { // (HTMLElement or String, Object)
-		options = Util.setOptions(this, options);
+		options = MapUtil.setOptions(this, options);
 
 		// Make sure to assign internal flags at the beginning,
 		// to avoid inconsistent state in some edge cases.
@@ -137,7 +137,7 @@ export var Map = Evented.extend({
 		this._initLayout();
 
 		// hack for https://github.com/Leaflet/Leaflet/issues/1980
-		this._onResize = Util.bind(this._onResize, this);
+		this._onResize = MapUtil.bind(this._onResize, this);
 
 		this._initEvents();
 
@@ -186,8 +186,8 @@ export var Map = Evented.extend({
 		if (this._loaded && !options.reset && options !== true) {
 
 			if (options.animate !== undefined) {
-				options.zoom = Util.extend({animate: options.animate}, options.zoom);
-				options.pan = Util.extend({animate: options.animate, duration: options.duration}, options.pan);
+				options.zoom = MapUtil.extend({animate: options.animate}, options.zoom);
+				options.pan = MapUtil.extend({animate: options.animate, duration: options.duration}, options.pan);
 			}
 
 			// try animating pan or zoom
@@ -413,7 +413,7 @@ export var Map = Evented.extend({
 			    s = easeOut(t) * S;
 
 			if (t <= 1) {
-				this._flyToFrame = Util.requestAnimFrame(frame, this);
+				this._flyToFrame = MapUtil.requestAnimFrame(frame, this);
 
 				this._move(
 					this.unproject(from.add(to.subtract(from).multiplyBy(u(s) / u1)), startZoom),
@@ -555,10 +555,10 @@ export var Map = Evented.extend({
 	invalidateSize: function (options) {
 		if (!this._loaded) { return this; }
 
-		options = Util.extend({
-			animate: false,
-			pan: true
-		}, options === true ? {animate: true} : options);
+		options = MapUtil.extend({
+			animate: MapUtil.mapUtilFalseFn(),
+			pan: MapUtil.mapUtilTrueFn()
+		}, options === true ? {animate: MapUtil.mapUtilTrueFn()} : options);
 
 		var oldSize = this.getSize();
 		this._sizeChanged = true;
@@ -583,7 +583,7 @@ export var Map = Evented.extend({
 
 			if (options.debounceMoveend) {
 				clearTimeout(this._sizeTimer);
-				this._sizeTimer = setTimeout(Util.bind(this.fire, this, 'moveend'), 200);
+				this._sizeTimer = setTimeout(MapUtil.bind(this.fire, this, 'moveend'), 200);
 			} else {
 				this.fire('moveend');
 			}
@@ -620,13 +620,9 @@ export var Map = Evented.extend({
 	// See `Locate options` for more details.
 	locate: function (options) {
 
-		options = this._locateOptions = Util.extend({
+		options = this._locateOptions = MapUtil.extend({
 			timeout: 10000,
 			watch: false
-			// setView: false
-			// maxZoom: <Number>
-			// maximumAge: 0
-			// enableHighAccuracy: false
 		}, options);
 
 		if (!('geolocation' in navigator)) {
@@ -637,8 +633,8 @@ export var Map = Evented.extend({
 			return this;
 		}
 
-		var onResponse = Util.bind(this._handleGeolocationResponse, this),
-		    onError = Util.bind(this._handleGeolocationError, this);
+		var onResponse = MapUtil.bind(this._handleGeolocationResponse, this),
+		    onError = MapUtil.bind(this._handleGeolocationError, this);
 
 		if (options.watch) {
 			this._locationWatchId =
@@ -768,7 +764,7 @@ export var Map = Evented.extend({
 			this._clearControlPos();
 		}
 		if (this._resizeRequest) {
-			Util.cancelAnimFrame(this._resizeRequest);
+			MapUtil.cancelAnimFrame(this._resizeRequest);
 			this._resizeRequest = null;
 		}
 
@@ -1093,7 +1089,7 @@ export var Map = Evented.extend({
 		}
 
 		DomEvent.on(container, 'scroll', this._onScroll, this);
-		this._containerId = Util.stamp(container);
+		this._containerId = MapUtil.stamp(container);
 	},
 
 	_initLayout: function () {
@@ -1251,7 +1247,7 @@ export var Map = Evented.extend({
 	},
 
 	_stop: function () {
-		Util.cancelAnimFrame(this._flyToFrame);
+		MapUtil.cancelAnimFrame(this._flyToFrame);
 		if (this._panAnim) {
 			this._panAnim.stop();
 		}
@@ -1283,7 +1279,7 @@ export var Map = Evented.extend({
 	// @section Interaction events
 	_initEvents: function (remove) {
 		this._targets = {};
-		this._targets[Util.stamp(this._container)] = this;
+		this._targets[MapUtil.stamp(this._container)] = this;
 
 		var onOff = remove ? DomEvent.off : DomEvent.on;
 
@@ -1327,8 +1323,8 @@ export var Map = Evented.extend({
 	},
 
 	_onResize: function () {
-		Util.cancelAnimFrame(this._resizeRequest);
-		this._resizeRequest = Util.requestAnimFrame(
+		MapUtil.cancelAnimFrame(this._resizeRequest);
+		this._resizeRequest = MapUtil.requestAnimFrame(
 		        function () { this.invalidateSize({debounceMoveend: true}); }, this);
 	},
 
@@ -1354,7 +1350,7 @@ export var Map = Evented.extend({
 		    dragging = false;
 
 		while (src) {
-			target = this._targets[Util.stamp(src)];
+			target = this._targets[MapUtil.stamp(src)];
 			if (target && (type === 'click' || type === 'preclick') && this._draggableMoved(target)) {
 				// Prevent firing click after you just dragged an object.
 				dragging = true;
@@ -1407,7 +1403,7 @@ export var Map = Evented.extend({
 			// Fired before mouse click on the map (sometimes useful when you
 			// want something to happen on click before any existing click
 			// handlers start running).
-			var synth = Util.extend({}, e);
+			var synth = MapUtil.extend({}, e);
 			synth.type = 'preclick';
 			this._fireDOMEvent(synth, synth.type, canvasTargets);
 		}
@@ -1447,7 +1443,7 @@ export var Map = Evented.extend({
 		for (i = 0; i < targets.length; i++) {
 			targets[i].fire(type, data, true);
 			if (data.originalEvent._stopped ||
-				(targets[i].options.bubblingMouseEvents === false && Util.indexOf(this._mouseEvents, type) !== -1)) { return; }
+				(targets[i].options.bubblingMouseEvents === false && MapUtil.indexOf(this._mouseEvents, type) !== -1)) { return; }
 		}
 	},
 
@@ -1669,7 +1665,7 @@ export var Map = Evented.extend({
 		// don't animate if the zoom origin isn't within one screen from the current center, unless forced
 		if (options.animate !== true && !this.getSize().contains(offset)) { return false; }
 
-		Util.requestAnimFrame(function () {
+		MapUtil.requestAnimFrame(function () {
 			this
 			    ._moveStart(true, false)
 			    ._animateZoom(center, zoom, true);
@@ -1707,7 +1703,7 @@ export var Map = Evented.extend({
 		this._move(this._animateToCenter, this._animateToZoom, undefined, true);
 
 		// Work around webkit not firing 'transitionend', see https://github.com/Leaflet/Leaflet/issues/3689, 2693
-		setTimeout(Util.bind(this._onZoomTransitionEnd, this), 250);
+		setTimeout(MapUtil.bind(this._onZoomTransitionEnd, this), 250);
 	},
 
 	_onZoomTransitionEnd: function () {
@@ -1729,7 +1725,7 @@ export var Map = Evented.extend({
 		this.fire('move');
 
 		// This anim frame should prevent an obscure iOS webkit tile loading race condition.
-		Util.requestAnimFrame(function () {
+		MapUtil.requestAnimFrame(function () {
 			this._moveEnd(true);
 		}, this);
 	}
