@@ -1,7 +1,7 @@
 import {Map} from '../Map';
 import {Handler} from '../../core/Handler';
 import {Draggable} from '../../dom/Draggable';
-import * as Util from '../../core/Util';
+import * as MapUtil from '../MapUtil';
 import * as DomUtil from '../../dom/DomUtil';
 import {toLatLngBounds as latLngBounds} from '../../geo/LatLngBounds';
 import {toBounds} from '../../geometry/Bounds';
@@ -216,7 +216,7 @@ export var Drag = Handler.extend({
 			} else {
 				offset = map._limitOffset(offset, map.options.maxBounds);
 
-				Util.requestAnimFrame(function () {
+				MapUtil.requestAnimFrame(function () {
 					map.panBy(offset, {
 						duration: decelerationDuration,
 						easeLinearity: ease,

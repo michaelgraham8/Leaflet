@@ -1,7 +1,7 @@
 import {Map} from '../Map';
 import {Handler} from '../../core/Handler';
 import * as DomEvent from '../../dom/DomEvent';
-import * as Util from '../../core/Util';
+import * as MapUtil from '../MapUtil';
 import * as DomUtil from '../../dom/DomUtil';
 import Browser from '../../core/Browser';
 
@@ -95,10 +95,10 @@ export var TouchZoom = Handler.extend({
 			this._moved = true;
 		}
 
-		Util.cancelAnimFrame(this._animRequest);
+		MapUtil.cancelAnimFrame(this._animRequest);
 
-		var moveFn = Util.bind(map._move, map, this._center, this._zoom, {pinch: true, round: false});
-		this._animRequest = Util.requestAnimFrame(moveFn, this, true);
+		var moveFn = MapUtil.bind(map._move, map, this._center, this._zoom, {pinch: true, round: false});
+		this._animRequest = MapUtil.requestAnimFrame(moveFn, this, true);
 
 		DomEvent.preventDefault(e);
 	},
@@ -110,7 +110,7 @@ export var TouchZoom = Handler.extend({
 		}
 
 		this._zooming = false;
-		Util.cancelAnimFrame(this._animRequest);
+		MapUtil.cancelAnimFrame(this._animRequest);
 
 		DomEvent.off(document, 'touchmove', this._onTouchMove, this);
 		DomEvent.off(document, 'touchend touchcancel', this._onTouchEnd, this);
