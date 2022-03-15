@@ -12,8 +12,8 @@ export function setOptions(target, options) {
     return Util.setOptions(target, options);
 }
 
-export function bind(eventHandler, target) {
-    return Util.bind(eventHandler, target);
+export function bind(eventHandler, target, event) {
+    return Util.bind(eventHandler, target, event);
 }
 
 export function requestAnimFrame(frame, target) {
